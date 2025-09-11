@@ -4,11 +4,27 @@ open Core.Color
 open Core.Ray
 open Core.Vec3
 
+let hitSphere(center: Point3, radius: double, r: Ray) : double =
+    let oc = center - r.Origin
+    let a = Vec3.Dot(r.Direction, r.Direction)
+    let b = -2.0 * Vec3.Dot(r.Direction, oc)
+    let c = Vec3.Dot(oc, oc) - radius*radius
+    let discriminant = b*b - 4.0 * a * c
+    if discriminant < 0.0 then
+        -1.0
+    else
+        (-b - sqrt discriminant) / (2.0 * a)
+
 let rayColor(r: Ray) : Color =
-    let unitDirection = Vec3.Normalize r.Direction
-    let a = 0.5 * (unitDirection.Y + 1.0)
-    (1.0 - a) * Color.White + a * Color(0.5, 0.7, 1.0)
-    
+    let t = hitSphere(Point3(0.0, 0.0, -1.0), 0.5, r)
+    if t > 0.0 then
+        let N = Vec3.Normalize (r.At(t) - Point3(0.0, 0.0, -1.0))
+        0.5 * Color(N.X + 1.0, N.Y + 1.0, N.Z + 1.0)
+    else
+        let unitDirection = Vec3.Normalize r.Direction
+        let a = 0.5 * (unitDirection.Y + 1.0)
+        (1.0 - a) * Color.White + a * Color(0.5, 0.7, 1.0)
+
 
 [<EntryPoint>]
 let main argv =
@@ -21,7 +37,6 @@ let main argv =
     imageHeight <- max imageHeight 1
 
     // Camera
-
     let focalLength = 1.0
     let viewportHeight = 2.0
     let viewportWidth = viewportHeight * (float imageWidth / float imageHeight)
