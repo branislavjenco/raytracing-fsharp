@@ -5,7 +5,10 @@ open Core.Ray
 open Core.Vec3
 
 let rayColor(r: Ray) : Color =
-    Color.White
+    let unitDirection = Vec3.Normalize r.Direction
+    let a = 0.5 * (unitDirection.Y + 1.0)
+    (1.0 - a) * Color.White + a * Color(0.5, 0.7, 1.0)
+    
 
 [<EntryPoint>]
 let main argv =

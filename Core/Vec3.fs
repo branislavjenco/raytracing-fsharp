@@ -31,6 +31,16 @@ type Vec3 = struct
     static member (/) (v: Vec3, s: int) =
         Vec3(v.X / float s, v.Y / float s, v.Z / float s)
 
+    static member (/) (v: Vec3, s: double) =
+        Vec3(v.X / float s, v.Y / float s, v.Z / float s)
+
+    member v.Length =
+        sqrt(v.X * v.X + v.Y * v.Y + v.Z * v.Z)
+
+    static member Normalize (v: Vec3) =
+        let len = v.Length
+        if len = 0.0 then v else v / len
+
 end
 
 type Point3 = Vec3
