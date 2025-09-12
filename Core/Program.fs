@@ -56,7 +56,6 @@ let main argv =
     let pixel00Loc = viewportUpperLeft + 0.5 * (pixelDeltaU + pixelDeltaV)
 
     // Render
-
     printfn $"P3\n{imageWidth} {imageHeight}\n255"
     for j in 0 .. imageHeight-1 do
         eprintf $"\rScanlines remaining: {(imageHeight - j)}"
