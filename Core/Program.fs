@@ -4,25 +4,43 @@ open Core.Color
 open Core.Ray
 open Core.Vec3
 
+// Find intersection of ray with sphere in terms of how far along the ray it is
 let hitSphere(center: Point3, radius: double, r: Ray) : double =
+
+    // Vector from ray origin to sphere center
     let oc = center - r.Origin
+
+    // Coefficients for the quadratic equation
     let a = Vec3.Dot(r.Direction, r.Direction)
     let b = -2.0 * Vec3.Dot(r.Direction, oc)
     let c = Vec3.Dot(oc, oc) - radius*radius
+
     let discriminant = b*b - 4.0 * a * c
     if discriminant < 0.0 then
         -1.0
     else
         (-b - sqrt discriminant) / (2.0 * a)
 
-let rayColor(r: Ray) : Color =
-    let t = hitSphere(Point3(0.0, 0.0, -1.0), 0.5, r)
+let rayColor(ray: Ray) : Color =
+    let sphereCenter = Point3(0.0, 0.0, -1.0)
+    let sphereRadius = 0.5
+    let t = hitSphere(sphereCenter, sphereRadius, ray)
     if t > 0.0 then
-        let N = Vec3.Normalize (r.At(t) - Point3(0.0, 0.0, -1.0))
+        // Hit sphere
+
+        // Subtract point of intersection with sphere center to get the normal vector (normalized)
+        let N = Vec3.Normalize (ray.At t - sphereCenter)
+
+        // Take the normalized vector components and map them from [-1, 1] to [0, 1] to show a color
         0.5 * Color(N.X + 1.0, N.Y + 1.0, N.Z + 1.0)
     else
-        let unitDirection = Vec3.Normalize r.Direction
+        // No hit, lerp from blue to white vertically
+        let unitDirection = Vec3.Normalize ray.Direction
+
+        // Map the Y component from interval [-1, 1] to [0, 1] for the next step
         let a = 0.5 * (unitDirection.Y + 1.0)
+
+        // The bigger "a" is the more blue, and vice versa
         (1.0 - a) * Color.White + a * Color(0.5, 0.7, 1.0)
 
 
@@ -32,8 +50,9 @@ let main argv =
     let aspectRatio = 16.0 / 9.0
     let imageWidth = 256
 
-    // Calculate the image height and ensure it's at least 1
+    // Calculate the height from width and aspect ratio and ensure it's at least 1
     let imageHeight = max (int (float imageWidth / aspectRatio)) 1
+    eprintfn "%A" imageHeight
 
     // Camera
     let focalLength = 1.0
@@ -61,7 +80,7 @@ let main argv =
     // Render
     printfn $"P3\n{imageWidth} {imageHeight}\n255"
     for j in 0 .. imageHeight-1 do
-        eprintf $"\rScanlines remaining: {(imageHeight - j)}"
+        eprintf $"\rScanlines remaining: {imageHeight - j}"
         for i in 0 .. imageWidth-1 do
             // Each pixel center is offset from the initial upper left pixel
             let pixelCenter = pixel00Loc + i * pixelDeltaU + j * pixelDeltaV
