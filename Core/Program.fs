@@ -33,8 +33,7 @@ let main argv =
     let imageWidth = 256
 
     // Calculate the image height and ensure it's at least 1
-    let mutable imageHeight = int (float imageWidth / aspectRatio) // I'm sure there's a nicer way to do this
-    imageHeight <- max imageHeight 1
+    let imageHeight = max (int (float imageWidth / aspectRatio)) 1
 
     // Camera
     let focalLength = 1.0
@@ -52,15 +51,20 @@ let main argv =
 
     // Calculate the location of the upper left pixel
     let viewportUpperLeft = cameraCenter - Vec3(0.0, 0.0, focalLength) - viewportU/2 - viewportV/2 
+    // 1 unit of distance away from the camera lies the viewport
+    // half the width to the left and half the height up lies the upper left corner
 
     let pixel00Loc = viewportUpperLeft + 0.5 * (pixelDeltaU + pixelDeltaV)
+    // the center of the uppermost left pixel is half the delta down and right
+
 
     // Render
     printfn $"P3\n{imageWidth} {imageHeight}\n255"
     for j in 0 .. imageHeight-1 do
         eprintf $"\rScanlines remaining: {(imageHeight - j)}"
         for i in 0 .. imageWidth-1 do
-            let pixelCenter = pixel00Loc + (i * pixelDeltaU) + (j * pixelDeltaV)
+            // Each pixel center is offset from the initial upper left pixel
+            let pixelCenter = pixel00Loc + i * pixelDeltaU + j * pixelDeltaV
             let rayDirection = pixelCenter - cameraCenter
             let r = Ray(cameraCenter, rayDirection)
             let pixelColor = rayColor(r)
