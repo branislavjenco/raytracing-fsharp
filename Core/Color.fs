@@ -14,6 +14,9 @@ type Color = struct
     static member (+) (v1: Color, v2: Color) = 
         Color(v1.R + v2.R, v1.G + v2.G, v1.B + v2.B)
 
+    static member (-) (v1: Color, v2: Color) = 
+        Color(v1.R - v2.R, v1.G - v2.G, v1.B - v2.B)
+
     static member (*) (v: Color, s: double) =
         Color(v.R * s, v.G * s, v.B * s)
 

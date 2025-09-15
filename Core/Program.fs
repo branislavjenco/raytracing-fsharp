@@ -4,11 +4,23 @@ open Core.Color
 open Core.Ray
 open Core.Vec3
 
+type HitResult = 
+    | Hit of double
+    | Miss
+
+
+// Playing with Static Type Constraints
+let inline lerp (a: ^T) (b: ^T) (t: ^U) : ^T
+    when ^T : (static member (+) : ^T * ^T -> ^T)
+     and ^T : (static member (-) : ^T * ^T -> ^T)
+     and ^T : (static member (*) : ^T * ^U -> ^T) =
+    a + (b - a) * t
+
 // Find intersection of ray with sphere in terms of how far along the ray it is
-let hitSphere(center: Point3, radius: double, r: Ray) : double =
+let hitSphere(center: Point3, radius: double, r: Ray) : HitResult =
 
     // Vector from ray origin to sphere center
-    let oc = center - r.Origin
+    let oc = Vec3.Between(r.Origin, center)
 
     // Coefficients for the quadratic equation
     let a = Vec3.Dot(r.Direction, r.Direction)
@@ -17,23 +29,23 @@ let hitSphere(center: Point3, radius: double, r: Ray) : double =
 
     let discriminant = b*b - 4.0 * a * c
     if discriminant < 0.0 then
-        -1.0
+        Miss
     else
-        (-b - sqrt discriminant) / (2.0 * a)
+        Hit ((-b - sqrt discriminant) / (2.0 * a))
 
 let rayColor(ray: Ray) : Color =
     let sphereCenter = Point3(0.0, 0.0, -1.0)
     let sphereRadius = 0.5
-    let t = hitSphere(sphereCenter, sphereRadius, ray)
-    if t > 0.0 then
-        // Hit sphere
-
+    let result = hitSphere(sphereCenter, sphereRadius, ray)
+    match result with
+    | Hit t ->
         // Subtract point of intersection with sphere center to get the normal vector (normalized)
-        let N = Vec3.Normalize (ray.At t - sphereCenter)
+        let N = Vec3.Between(sphereCenter, ray.At t) |> Vec3.Normalize
 
         // Take the normalized vector components and map them from [-1, 1] to [0, 1] to show a color
         0.5 * Color(N.X + 1.0, N.Y + 1.0, N.Z + 1.0)
-    else
+        // maybe we could have a nice generic remap function but it's a little fiddly if it should work on scalars and vectors
+    | Miss ->
         // No hit, lerp from blue to white vertically
         let unitDirection = Vec3.Normalize ray.Direction
 
@@ -41,7 +53,7 @@ let rayColor(ray: Ray) : Color =
         let a = 0.5 * (unitDirection.Y + 1.0)
 
         // The bigger "a" is the more blue, and vice versa
-        (1.0 - a) * Color.White + a * Color(0.5, 0.7, 1.0)
+        lerp Color.White (Color(0.5, 0.7, 1.0)) a
 
 
 [<EntryPoint>]
@@ -84,7 +96,7 @@ let main argv =
         for i in 0 .. imageWidth-1 do
             // Each pixel center is offset from the initial upper left pixel
             let pixelCenter = pixel00Loc + i * pixelDeltaU + j * pixelDeltaV
-            let rayDirection = pixelCenter - cameraCenter
+            let rayDirection = Vec3.Between(cameraCenter, pixelCenter)
             let r = Ray(cameraCenter, rayDirection)
             let pixelColor = rayColor(r)
             WriteColor(stdout, pixelColor)

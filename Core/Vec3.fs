@@ -44,6 +44,11 @@ type Vec3 = struct
     static member Dot (v1: Vec3, v2: Vec3) =
         v1.X * v2.X + v1.Y * v2.Y + v1.Z * v2.Z
 
+    static member Between (p1: Vec3, p2: Vec3) =
+        p2 - p1
+    
+
+
 end
 
 type Point3 = Vec3
