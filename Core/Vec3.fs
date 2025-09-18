@@ -34,8 +34,11 @@ type Vec3 = struct
     static member (/) (v: Vec3, s: double) =
         Vec3(v.X / float s, v.Y / float s, v.Z / float s)
 
+    member v.LengthSquared =
+        v.X * v.X + v.Y * v.Y + v.Z * v.Z
+
     member v.Length =
-        sqrt(v.X * v.X + v.Y * v.Y + v.Z * v.Z)
+        sqrt v.LengthSquared
 
     static member Normalize (v: Vec3) =
         let len = v.Length

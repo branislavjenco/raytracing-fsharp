@@ -22,16 +22,16 @@ let hitSphere(center: Point3, radius: double, r: Ray) : HitResult =
     // Vector from ray origin to sphere center
     let oc = Vec3.Between(r.Origin, center)
 
-    // Coefficients for the quadratic equation
-    let a = Vec3.Dot(r.Direction, r.Direction)
-    let b = -2.0 * Vec3.Dot(r.Direction, oc)
-    let c = Vec3.Dot(oc, oc) - radius*radius
+    let a = r.Direction.LengthSquared
+    let h = Vec3.Dot(r.Direction, oc)
+    let c = oc.LengthSquared - radius*radius
 
-    let discriminant = b*b - 4.0 * a * c
+    let discriminant = h*h - a*c
+
     if discriminant < 0.0 then
         Miss
     else
-        Hit ((-b - sqrt discriminant) / (2.0 * a))
+        Hit ((h - sqrt discriminant) / a)
 
 let rayColor(ray: Ray) : Color =
     let sphereCenter = Point3(0.0, 0.0, -1.0)
