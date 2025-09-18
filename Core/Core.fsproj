@@ -9,6 +9,8 @@
     <Compile Include="Vec3.fs" />
     <Compile Include="Ray.fs" />
     <Compile Include="Color.fs" />
+    <Compile Include="Hittable.fs" />
+    <Compile Include="Sphere.fs" />
     <Compile Include="Test.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>

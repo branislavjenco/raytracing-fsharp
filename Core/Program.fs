@@ -3,11 +3,8 @@
 open Core.Color
 open Core.Ray
 open Core.Vec3
-
-type HitResult = 
-    | Hit of double
-    | Miss
-
+open Core.Sphere
+open Core.Hittable
 
 // Playing with Static Type Constraints
 let inline lerp (a: ^T) (b: ^T) (t: ^U) : ^T
@@ -16,31 +13,16 @@ let inline lerp (a: ^T) (b: ^T) (t: ^U) : ^T
      and ^T : (static member (*) : ^T * ^U -> ^T) =
     a + (b - a) * t
 
-// Find intersection of ray with sphere in terms of how far along the ray it is
-let hitSphere(center: Point3, radius: double, r: Ray) : HitResult =
-
-    // Vector from ray origin to sphere center
-    let oc = Vec3.Between(r.Origin, center)
-
-    let a = r.Direction.LengthSquared
-    let h = Vec3.Dot(r.Direction, oc)
-    let c = oc.LengthSquared - radius*radius
-
-    let discriminant = h*h - a*c
-
-    if discriminant < 0.0 then
-        Miss
-    else
-        Hit ((h - sqrt discriminant) / a)
 
 let rayColor(ray: Ray) : Color =
     let sphereCenter = Point3(0.0, 0.0, -1.0)
     let sphereRadius = 0.5
-    let result = hitSphere(sphereCenter, sphereRadius, ray)
+    let sphere = Sphere (sphereCenter, sphereRadius)
+    let result = (sphere :> Hittable).Hit(ray, 0.0, infinity)
     match result with
-    | Hit t ->
+    | Hit record ->
         // Subtract point of intersection with sphere center to get the normal vector (normalized)
-        let N = Vec3.Between(sphereCenter, ray.At t) |> Vec3.Normalize
+        let N = Vec3.Between(sphereCenter, ray.At record.t) |> Vec3.Normalize
 
         // Take the normalized vector components and map them from [-1, 1] to [0, 1] to show a color
         0.5 * Color(N.X + 1.0, N.Y + 1.0, N.Z + 1.0)
